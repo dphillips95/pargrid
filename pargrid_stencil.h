@@ -27,11 +27,11 @@
 #include "pargrid_definitions.h"
 
 namespace pargrid {
-   
+
    // ************************************** //
    // ***** CLASS STENCIL DECLARATIONS ***** //
    // ************************************** //
-   
+
    /** Class used to calculate send and receive lists for user-defined stencils in ParGrid. 
     * This class does most of the dirty work related to transferring data with MPI.*/
    template<class PARGRID,class C>
@@ -39,7 +39,7 @@ namespace pargrid {
     public:
       Stencil();
       ~Stencil();
-      
+
       bool addUserDataTransfer(DataID userDataID,bool isDynamic);
       void clear();
       const std::vector<CellID>& getBoundaryCells() const;
@@ -53,25 +53,25 @@ namespace pargrid {
       bool update();
       bool wait(DataID userDataID);
       bool wait(DataID userDataID,const std::string& name);
-      
+
     private:
       /** Wrapper for MPI_Datatype. This was created to make copying and deletion of
        * MPI_Datatype work correctly. Calls MPI_Type_dup in appropriate places.*/
       struct TypeWrapper {
 	 MPI_Datatype type;                               /**< MPI datatype.*/
-	 
+
 	 TypeWrapper();
 	 TypeWrapper(const TypeWrapper& tw);
 	 ~TypeWrapper();
 	 TypeWrapper& operator=(const TypeWrapper& tw);
       };
-      
+
       /** MPI Datatype cache for data transfer.*/
       struct TypeCache {
 	 std::vector<TypeWrapper> recvs; /**< MPI datatypes for receiving data.*/
 	 std::vector<TypeWrapper> sends; /**< MPI datatypes for sending data.*/
       };
-    
+
       /** Information on data transfer.*/
       struct TypeInfo {
 	 int N_receives;          /**< Total number of messages received during this transfer.*/
@@ -82,7 +82,7 @@ namespace pargrid {
 	 bool started;            /**< If true, this transfer has started and MPI requests are valid.*/
 	 MPI_Request* requests;   /**< MPI requests associated with this transfer.*/
       };
-      
+
       /** Receive buffer for StencilType::remoteToLocalUpdates. These arrays 
        * are only allocated if needed. RecvBuffer is only used for 
        * user-defined ParGrid data arrays.*/
@@ -97,16 +97,16 @@ namespace pargrid {
 	 unsigned int* offsets;
 	 char* buffer;
       };
-      
+
       std::vector<CellID> boundaryCells;                           /**< List of boundary cells of this stencil.*/
       std::vector<CellID> innerCells;                              /**< List of inner cells of this stencil.*/
       bool initialized;                                            /**< If true, Stencil has initialized successfully and is ready for use.*/
       std::vector<NeighbourID> receivedNbrTypeIDs;                 /**< Neighbour type IDs indicating which cells to receive data from.*/
       std::vector<NeighbourID> sentNbrTypeIDs;                     /**< Neighbour type IDs indicating which cells to send data.*/
-      
+
       std::map<DataID,std::map<MPI_processID,TypeCache> > typeCachesUser;
       std::map<DataID,TypeInfo> typeInfoUser;
-      
+
       PARGRID* parGrid;                                            /**< Pointer to parallel grid.*/
       StencilType stencilType;
       std::map<MPI_processID,std::set<CellID> > recvs;             /**< List of received cells (ordered by global ID) from each neighbour process.*/
@@ -116,7 +116,7 @@ namespace pargrid {
 								    * used for stencilType remoteToLocalUpdates.*/
       std::map<DataID,RecvBuffer*> recvBuffers;                    /**< Receive buffers for StencilType::remoteToLocalUpdates. These 
 								    * are allocated only when needed.*/
-      
+
       bool calcLocalUpdateSendsAndReceives();
       bool calcTypeCacheUser(DataID userDataID);
       bool calcTypeCacheDynamic(DataID userDataID,TypeInfo& info);
@@ -125,15 +125,15 @@ namespace pargrid {
       bool waitStatic(DataID userDataID);
       bool waitStatic(DataID userDataID,const std::string& name);
    };
-         
+
    // ************************************************** //
    // ***** CLASS STENCIL::TYPEWRAPPER DEFINITIONS ***** //
    // ************************************************** //
-   
+
    /** Default constructor for TypeWrapper. Sets type to MPI_DATATYPE_NULL.*/
    template<class PARGRID,class C> inline
    Stencil<PARGRID,C>::TypeWrapper::TypeWrapper(): type(MPI_DATATYPE_NULL) { }
-   
+
    /** Copy-constructor for TypeWrapper. Makes a copy of MPI datatype with 
     * MPI_Type_dup unless the given datatype is MPI_DATATYPE_NULL.
     * @param tw TypeWrapper to be copied.*/
@@ -142,14 +142,14 @@ namespace pargrid {
       if (tw.type != MPI_DATATYPE_NULL) MPI_Type_dup(tw.type,&type);
       else type = MPI_DATATYPE_NULL;
    }
-   
+
    /** Destructor for TypeWrapper. Frees the MPI datatype with MPI_Type_free 
     * unless the datatype is MPI_DATATYPE_NULL.*/
    template<class PARGRID,class C> inline
    Stencil<PARGRID,C>::TypeWrapper::~TypeWrapper() {
       if (type != MPI_DATATYPE_NULL) MPI_Type_free(&type);
    }
-   
+
    /** Assignment operator for TypeWrapper. Makes a copy of the given MPI datatype 
     * with MPI_Type_dup, unless the given datatype is MPI_DATATYPE_NULL. Also frees 
     * the current datatype with MPI_DATATYPE_NULL if necessary.
@@ -166,11 +166,11 @@ namespace pargrid {
    // ************************************************* //
    // ***** CLASS STENCIL::RECVBUFFER DEFINITIONS ***** //
    // ************************************************* //
-   
+
    /** Default constructor for RecvBuffer. Sets array pointers to NULL.*/
    template<class PARGRID,class C> inline
    Stencil<PARGRID,C>::RecvBuffer::RecvBuffer(): offsetsSize(0),bufferSize(0),elementSize(0),offsets(NULL),buffer(NULL) { }
-   
+
    /** RecvBuffer copy-constructor. Allocates new offsets and buffer arrays.*/
    template<class PARGRID,class C> inline
    Stencil<PARGRID,C>::RecvBuffer::RecvBuffer(const RecvBuffer& rbuffer) {
@@ -182,7 +182,7 @@ namespace pargrid {
       for (size_t i=0; i<offsetsSize; ++i) offsets[i] = rbuffer.offsets[i];
       for (size_t i=0; i<bufferSize; ++i) buffer[i] = rbuffer.buffer[i];
    }
-   
+
    /** Destructor for RecvBuffer. Calls delete for arrays.*/
    template<class PARGRID,class C> inline
    Stencil<PARGRID,C>::RecvBuffer::~RecvBuffer() {
@@ -193,11 +193,11 @@ namespace pargrid {
    // ************************************* //
    // ***** CLASS STENCIL DEFINITIONS ***** //
    // ************************************* //
-   
+
    /** Default constructor.*/
    template<class PARGRID,class C> inline
    Stencil<PARGRID,C>::Stencil() { }
-   
+
    /** Destructor. Frees all MPI datatypes and deallocates arrays.*/
    template<class PARGRID,class C> inline
    Stencil<PARGRID,C>::~Stencil() {
@@ -232,7 +232,7 @@ namespace pargrid {
       calcTypeCacheUser(userDataID);
       return true;
    }
-   
+
    /** Calculate send and receive lists for this Stencil.
     * @return If true, send and receive lists were calculated successfully.*/
    template<class PARGRID,class C> inline
@@ -240,7 +240,7 @@ namespace pargrid {
       if (initialized == false) return false;
       bool success = true;
       clear();
-	
+
       // Iterate over all local cells' neighbours. If the neighbour is not in 
       // sentNbrTypeIDs or receivedNbrTypeIDs, skip it.
       // If the neighbour is remote, add the local cell into sends and the neighbour into recvs. 
@@ -257,18 +257,19 @@ namespace pargrid {
 	    const MPI_processID nbrHost = parGrid->getHosts()[nbrLocalID];
 	    if (nbrHost == parGrid->getRank()) continue;
 	    const CellID nbrGlobalID = globalIDs[nbrLocalID];
-	    
+
 	    // If neighbour type ID is in sentNbrTypeIDs, add a send:
 	    if (std::find(sentNbrTypeIDs.begin(),sentNbrTypeIDs.end(),nbr) != sentNbrTypeIDs.end()) {
 	       if (stencilType == localToRemoteUpdates) sends[nbrHost].insert(globalIDs[i]);
 	       else sends[nbrHost].insert(nbrGlobalID);
 	    }
-	    
+
 	    // If neighbour type ID is in receivedNbrTypeIDs, add a receive:
 	    if (std::find(receivedNbrTypeIDs.begin(),receivedNbrTypeIDs.end(),nbr) != receivedNbrTypeIDs.end()) {
 	       if (stencilType == localToRemoteUpdates) {
 		  recvs[nbrHost].insert(nbrGlobalID);
-	       } else {
+	       }
+	       else {
 		  recvs[nbrHost].insert(globalIDs[i]);
 		  recvCounts[globalIDs[i]].insert(nbrHost);
 	       }
@@ -294,7 +295,7 @@ namespace pargrid {
       bool success = true;
       return success;
    }
-   
+
    template<class PARGRID,class C> inline
    bool Stencil<PARGRID,C>::calcTypeCacheStatic(DataID userDataID,TypeInfo& info) {
       // Free old datatypes:
@@ -303,13 +304,13 @@ namespace pargrid {
 	 jt->second.sends.clear();
 	 jt->second.recvs.clear();
       }
-      
+
       // Delele old MPI_Requests:
       delete [] info.requests; info.requests = NULL;
-      
+
       // Remove old process entries from typeCache:
       it->second.clear();
-      
+
       // Insert entry for each neighbouring process:
       for (std::map<MPI_processID,std::set<CellID> >::const_iterator i=sends.begin(); i!=sends.end(); ++i) {
 	 (it->second)[i->first];
@@ -317,7 +318,7 @@ namespace pargrid {
       for (std::map<MPI_processID,std::set<CellID> >::const_iterator i=recvs.begin(); i!=recvs.end(); ++i) {
 	 (it->second)[i->first];
       }
-      
+
       // Insert entry to recvBuffers if one does not already exist:
       if (stencilType == remoteToLocalUpdates) {
 	 // Allocate offset array for each local boundary cell and 
@@ -325,7 +326,7 @@ namespace pargrid {
 	 // allocated if one already exists:
 	 std::pair<typename std::map<DataID,RecvBuffer*>::iterator,bool> result
 	   = recvBuffers.insert(std::make_pair(userDataID,(RecvBuffer*)NULL));
-	 
+
 	 // Allocate arrays if a new RecvBuffer was created:
 	 if (result.second == true) {
 	    result.first->second = new RecvBuffer();
@@ -349,7 +350,7 @@ namespace pargrid {
 	    result.first->second->elementSize = elementByteSize;
 	 }
       }
-      
+
       // Create MPI datatypes for sending and receiving data:
       info.N_receives = 0;
       info.N_sends    = 0;
@@ -362,7 +363,7 @@ namespace pargrid {
 	 size_t N_sends = 0;
 	 tmp = sends.find(jt->first);
 	 if (tmp != sends.end()) N_sends = tmp->second.size();
-	 
+
 	 // Create MPI datatype for receiving all user data, associated with given 
 	 // transfer ID, at once from process jt->first:
 	 if (N_recvs > 0) {
@@ -371,7 +372,7 @@ namespace pargrid {
 	    RecvBuffer* rbuffer = NULL;
 	    int* disps = NULL;
 	    jt->second.recvs.push_back(TypeWrapper());
-	    
+
 	    switch (stencilType) {
 	     case localToRemoteUpdates:
 	       parGrid->getUserDatatype(userDataID,recvs[jt->first],jt->second.recvs.back().type,false);
@@ -388,7 +389,7 @@ namespace pargrid {
 	       rbuffer = tmp->second;
 	       MPI_Type_contiguous(rbuffer->elementSize,MPI_Type<char>(),&basicType);
 	       MPI_Type_commit(&basicType);
-	       
+
 	       // Allocate memory for displacements array, and calculate displacements 
 	       // into receive buffer for cells received from process jt->first:
 	       disps = new int[recvs[jt->first].size()];
@@ -403,12 +404,12 @@ namespace pargrid {
 		     }
                   #endif
 		  const unsigned int offset = (rbuffer->offsets)[ptr - boundaryCells.begin()];
-		  
+
 		  disps[counter] = offset + receivesPosted[*i];
 		  ++counter;
 		  ++receivesPosted[*i];
 	       }
-	       
+
 	       #ifndef NDEBUG
 	          for (size_t index=0; index<recvs[jt->first].size(); ++index) {
 		     if (disps[index] >= rbuffer->bufferSize) {
@@ -417,7 +418,7 @@ namespace pargrid {
 		     }
 		  }
                #endif
-	       
+
 	       // Create MPI datatype for receiving all data at once from process jt->second:
 	       MPI_Type_create_indexed_block(recvs[jt->first].size(),1,disps,basicType,&(jt->second.recvs.back().type));
 	       MPI_Type_commit(&(jt->second.recvs.back().type));
@@ -426,7 +427,7 @@ namespace pargrid {
 	    ++info.N_receives;
 	    delete [] disps; disps = NULL;
 	 }
-	  
+
 	 // Create MPI datatype for sending all user data, associated with given
 	 // transfer ID, at once to process jt->first:
 	 if (N_sends > 0) {
@@ -447,7 +448,7 @@ namespace pargrid {
       info.requests = new MPI_Request[info.N_receives+info.N_sends];
       return true;
    }
-      
+
    /** Clear some of Stencil internal variables.*/
    template<class PARGRID,class C> inline
    void Stencil<PARGRID,C>::clear() {
@@ -457,22 +458,22 @@ namespace pargrid {
       sends.clear();
       recvCounts.clear();
    }
-   
+
    /** Get boundary cell list for this Stencil.
     * @return Vector containing boundary cell local IDs.*/
    template<class PARGRID,class C> inline
-   const std::vector<CellID>& Stencil<PARGRID,C>::getBoundaryCells() const {return boundaryCells;}
-   
+   const std::vector<CellID>& Stencil<PARGRID,C>::getBoundaryCells() const { return boundaryCells; }
+
    /** Get inner cell list for this Stencil.
     * @return Vector containing inner cell local IDs.*/
    template<class PARGRID,class C> inline
-   const std::vector<CellID>& Stencil<PARGRID,C>::getInnerCells() const {return innerCells;}
+   const std::vector<CellID>& Stencil<PARGRID,C>::getInnerCells() const { return innerCells; }
 
    /** Get list(s) of cells to receive from each neighbour process, ordered by their global IDs.
     * @return List(s) of cells to receive.*/
    template<class PARGRID,class C> inline
-   const std::map<MPI_processID,std::set<CellID> >& Stencil<PARGRID,C>::getRecvs() const {return recvs;}
-   
+   const std::map<MPI_processID,std::set<CellID> >& Stencil<PARGRID,C>::getRecvs() const { return recvs; }
+
    /** Get offset and buffer array for given user-defined ParGrid data array. This 
     * function should only be called for StencilType::remoteToLocalUpdates.
     * @param userDataID ID number of the user-defined data array.
@@ -492,8 +493,8 @@ namespace pargrid {
    /** Get list(s) of cells sent to each neighbour process, ordered by their global IDs.
     * @return List of cells to send to each neighbour process.*/
    template<class PARGRID,class C> inline
-   const std::map<MPI_processID,std::set<CellID> >& Stencil<PARGRID,C>::getSends() const {return sends;}
-   
+   const std::map<MPI_processID,std::set<CellID> >& Stencil<PARGRID,C>::getSends() const { return sends; }
+
    /** Initialize Stencil.
     * @param parGrid Pointer to ParGrid.
     * @param stencilType Type of the Stencil.
@@ -506,7 +507,7 @@ namespace pargrid {
       this->stencilType = stencilType;
       this->receivedNbrTypeIDs = receives;
       sentNbrTypeIDs.reserve(receives.size());
-	
+
       // Send stencil is the inverse of receive stencil:
       int i_off = 0;
       int j_off = 0;
@@ -518,7 +519,7 @@ namespace pargrid {
 	 k_off *= -1;
 	 sentNbrTypeIDs.push_back(parGrid.calcNeighbourTypeID(i_off,j_off,k_off));
       }
-      
+
       // Sort vectors containing sent and received neighbour types:
       std::sort(sentNbrTypeIDs.begin(),sentNbrTypeIDs.end());
       std::sort(receivedNbrTypeIDs.begin(),receivedNbrTypeIDs.end());
@@ -528,7 +529,7 @@ namespace pargrid {
       if (update() == false) initialized = false;
       return initialized;
    }
-   
+
    /** Remove transfer with given identifier from Stencil.
     * @param ID ID number of the user data array.
     * @return If true, transfer was removed successfully.*/
@@ -544,7 +545,7 @@ namespace pargrid {
       // Erase transfer:
       typeCachesUser.erase(userDataID);
       typeInfoUser.erase(userDataID);
-      
+
       // Erase RecvBuffer associated with this array:
       typename std::map<DataID,RecvBuffer*>::iterator jt = recvBuffers.find(userDataID);
       if (jt != recvBuffers.end()) {
@@ -554,12 +555,12 @@ namespace pargrid {
       }
       return true;
    }
-   
+
    template<class PARGRID,class C> inline
    bool Stencil<PARGRID,C>::startTransfer(DataID userDataID) {
       return startStaticTransfer(userDataID);
    }
-   
+
    template<class PARGRID,class C> inline
    bool Stencil<PARGRID,C>::startStaticTransfer(DataID userDataID) {
       typename std::map<DataID,std::map<MPI_processID,TypeCache> >::iterator it = typeCachesUser.find(userDataID);
@@ -567,7 +568,7 @@ namespace pargrid {
       if (it == typeCachesUser.end()) return false;
       if (info->second.started == true) return false;
       if (info->second.typeVolatile == true) calcTypeCacheUser(userDataID);
-      
+
       // Post sends and receives:
       unsigned int counter = 0;
       MPI_Request* requests = info->second.requests;
@@ -578,12 +579,13 @@ namespace pargrid {
 	 if (stencilType == localToRemoteUpdates) {
 	    rcvBuffer = parGrid->getUserData(userDataID);
 	    sndBuffer = rcvBuffer;
-	 } else {
+	 }
+	 else {
 	    sndBuffer = parGrid->getUserData(userDataID);
 	    typename std::map<DataID,RecvBuffer*>::iterator it = recvBuffers.find(userDataID);
 	    if (it != recvBuffers.end()) rcvBuffer = it->second->buffer;
 	 }
-	 
+
 	 #ifndef NDEBUG
 	    if (rcvBuffer == NULL) {
 	       std::cerr << "(STENCIL) ERROR: User data ID #" << userDataID << " NULL recv buffer!" << std::endl; exit(1);
@@ -592,7 +594,7 @@ namespace pargrid {
 	       std::cerr << "(STENCIL) ERROR: User data ID #" << userDataID << " NULL send buffer!" << std::endl; exit(1);
 	    }
          #endif
-	    
+
 	 for (size_t i=0; i<proc->second.recvs.size(); ++i) {
 	    MPI_Irecv(rcvBuffer,1,proc->second.recvs[i].type,proc->first,proc->first,parGrid->getComm(),requests+counter);
 	    ++counter;
@@ -605,33 +607,33 @@ namespace pargrid {
       info->second.started = true;
       return true;
    }
-   
+
    template<class PARGRID,class C> inline
    bool Stencil<PARGRID,C>::update() {
       if (initialized == false) return false;
-	
+
       // Deallocate RecvBuffers:
       for (typename std::map<DataID,RecvBuffer*>::iterator it=recvBuffers.begin(); it!=recvBuffers.end(); ++it) {
 	 delete it->second;
 	 it->second = NULL;
       }
       recvBuffers.clear();
-      
+
       // Recalculate new send & recv lists:
       bool success = calcLocalUpdateSendsAndReceives();
-      
+
       // Recalculate MPI datatype caches (static data):
       for (typename std::map<DataID,std::map<MPI_processID,TypeCache> >::iterator it=typeCachesUser.begin(); it!=typeCachesUser.end(); ++it)
 	calcTypeCacheUser(it->first);
-      
+
       return success;
    }
-   
+
    template<class PARGRID,class C> inline
    bool Stencil<PARGRID,C>::wait(DataID userDataID) {
       return waitStatic(userDataID);
    }
-   
+
    template<class PARGRID,class C> inline
    bool Stencil<PARGRID,C>::wait(DataID userDataID,const std::string& name) {
       return waitStatic(userDataID,name);
@@ -646,13 +648,13 @@ namespace pargrid {
       info->second.started = false;
       return true;
    }
-   
+
    template<class PARGRID,class C> inline
    bool Stencil<PARGRID,C>::waitStatic(DataID userDataID,const std::string& name) {
       typename std::map<DataID,TypeInfo>::iterator info = typeInfoUser.find(userDataID);
       if (info == typeInfoUser.end()) return false;
       if (info->second.started == false) return false;
-      
+
       int flag = false;
       uint64_t waitTime      = 10000;
       uint64_t waitedTime    = 0;
@@ -673,7 +675,7 @@ namespace pargrid {
       info->second.started = false;
       return true;
    }
-      
+
 } // namespace pargrid
 
 #endif

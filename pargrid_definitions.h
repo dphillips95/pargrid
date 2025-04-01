@@ -38,7 +38,7 @@ namespace pargrid {
    typedef unsigned char NeighbourID;               /**< Datatype ParGrid uses for neighbour type IDs.*/
    typedef unsigned int StencilID;                  /**< Datatype ParGrid uses for stencil IDs.*/
    typedef unsigned int DataID;                     /**< Datatype ParGrid uses for user-defined array IDs.*/
-   
+
    enum InputParameter {
       cellWeightScale,                              /**< Value used for cell weights.*/
       edgeWeightScale,                              /**< Value (or its scale) used to calculate edge weights.*/
@@ -46,12 +46,12 @@ namespace pargrid {
       loadBalancingMethod,                          /**< Load balancing method to use.*/
       processesPerPartition                         /**< Processes per partition (hierarchical partitioning only).*/
    };
-   
+
    enum StencilType {
       localToRemoteUpdates,
       remoteToLocalUpdates
    };
-   
+
    /** Different partitioning modes that ParGrid supports.
     * These are directly tied to the partitioning modes supported by Zoltan.*/
    enum PartitioningMode {
@@ -61,7 +61,7 @@ namespace pargrid {
       refine                                        /**< Partitioning calls should only slightly improve 
 						     * the existing partitioning.*/
    };
-   
+
    const size_t N_neighbours = 27;                      /**< Number of neighbours reserved each parallel cell has (including the cell itself).*/
    const uint32_t ALL_NEIGHBOURS_EXIST = 134217728 - 1; /**< If a cell's neighbour flags field equals this value all its 
 							 * neighbours exist, i.e. the cell is an inner cell.*/
@@ -73,8 +73,8 @@ namespace pargrid {
    const StencilID INVALID_STENCILID = std::numeric_limits<pargrid::StencilID>::max();
 
    template<typename T> inline
-   T getInvalidID() {return std::numeric_limits<T>::max();}
-   
+   T getInvalidID() { return std::numeric_limits<T>::max(); }
+
 } // namespace pargrid
-   
+ 
 #endif

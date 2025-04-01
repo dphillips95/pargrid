@@ -30,7 +30,7 @@ namespace pargrid {
    // ********************************************* //
    // ***** CLASS STATICUSERDATA DECLARATIONS ***** //
    // ********************************************* //
-   
+
    /** Wrapper for a user-defined parallel data array in ParGrid.
     * The purpose of this struct is to include all information that is 
     * needed to create, delete, and copy parallel arrays. Some helper 
@@ -41,17 +41,17 @@ namespace pargrid {
       UserDataStatic();
       UserDataStatic(const UserDataStatic& udw);
       ~UserDataStatic();
-      
+
       void copy(const UserDataStatic& udw,CellID newCell,CellID oldCell);
       bool finalize();
       void* getAddress();
       void getDatatype(const std::set<CellID>& globalIDs,MPI_Datatype& datatype);
-      unsigned int getElementSize() const {return N_elements*byteSize;}
+      unsigned int getElementSize() const { return N_elements*byteSize; }
       const std::string& getName() const;
       void initialize(PARGRID* pargrid,const std::string& name,size_t N_cells,unsigned int elements,
 		      unsigned int byteSize,const std::string& datatype);
       void swap(UserDataStatic& uds);
-      
+
       char* array;                   /**< Pointer to array containing the data.*/
       std::string name;              /**< Name of the array.*/
       unsigned int byteSize;         /**< Byte size of a single array element, i.e. sizeof(double) for a double array.*/
@@ -63,11 +63,11 @@ namespace pargrid {
     private:
       MPI_Datatype basicDatatype;    /**< MPI derived datatype that transfers data on a single cell.*/
    };
-   
+
    // ******************************************** //
    // ***** CLASS STATICUSERDATA DEFINITIONS ***** //
    // ******************************************** //
-   
+
    /** Default constructor. Calls UserDataStatic::finalize().*/
    template<class PARGRID> inline
    UserDataStatic<PARGRID>::UserDataStatic() {
@@ -87,7 +87,7 @@ namespace pargrid {
    /** Destructor. Calls UserDataStatic::finalize().*/
    template<class PARGRID> inline
    UserDataStatic<PARGRID>::~UserDataStatic() {finalize();}
-   
+
    /** Copy data from given UserDataStatic.
     * @param udw UserDataStatic whose data is to be copied.
     * @param newCell Target cell in which data is written.
@@ -97,7 +97,7 @@ namespace pargrid {
       for (unsigned int i=0; i<N_elements*byteSize; ++i)
 	array[newCell*N_elements*byteSize+i] = udw.array[oldCell*N_elements*byteSize+i];
    }
-   
+
    /** Deallocates UserDataStatic::array and sets internal variables to dummy values.
     * @return If true, finalization completed successfully.*/
    template<class PARGRID> inline
@@ -111,12 +111,12 @@ namespace pargrid {
       delete [] array; array = NULL;
       return true;
    }
-   
+
    /** Get a pointer to UserDataStatic::array.
     * @return Pointer to user data array. NULL value is returned for uninitialized array.*/
    template<class PARGRID> inline
-   void* UserDataStatic<PARGRID>::getAddress() {return array;}
-   
+   void* UserDataStatic<PARGRID>::getAddress() { return array; }
+
    /** Get a derived MPI datatype that will transfer all the given cells with a single send (or receive).
     * This function calls MPI_Type_commit for the newly created datatype, MPI_Type_free must be called elsewhere.
     * @param globalIDs Global IDs of the cells.
@@ -143,8 +143,8 @@ namespace pargrid {
    }
 
    template<class PARGRID> inline
-   const std::string& UserDataStatic<PARGRID>::getName() const {return name;}
-   
+   const std::string& UserDataStatic<PARGRID>::getName() const { return name; }
+
    /** Initialize UserDataStatic. Memory for UserDataStatic::array is allocated here.
     * @param pargrid Pointer to ParGrid class that called this function.
     * @param name Name of the user data array.
@@ -164,12 +164,12 @@ namespace pargrid {
       this->N_cells = N_cells;
       this->datatype = datatype;
       array = new char[N_cells*N_elements*byteSize];
-      
+
       // Create an MPI datatype that transfers a single array element:
       MPI_Type_contiguous(N_elements*byteSize,MPI_Type<char>(),&basicDatatype);
       MPI_Type_commit(&basicDatatype);
    }
-   
+
    /** Swap the contents of two UserDataStatic containers.
     * @param uds UserDataStatic container to be swapped with.*/
    template<class PARGRID> inline
@@ -192,7 +192,7 @@ namespace pargrid {
       MPI_Type_free(&basicDatatype);
       MPI_Type_contiguous(N_elements*byteSize,MPI_Type<char>(),&basicDatatype);
       MPI_Type_commit(&basicDatatype);
-      
+
       // Set the contents ot the other UserDataStatic:
       uds.array = dummyArray;
       uds.name = dummyName;

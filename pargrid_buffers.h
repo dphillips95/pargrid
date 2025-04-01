@@ -1,6 +1,6 @@
 /** This file is part of ParGrid parallel grid.
  * 
- *  Copyright 2011-2013 Finnish Meteorological Institute
+ *  Copyright 2011-2025 Finnish Meteorological Institute
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -77,7 +77,7 @@ namespace pargrid {
       size_t N_copiedElements;                        /**< Number of elements that were actually copied. This 
 						       * is equal to or less than the current buffer size.*/
    };
-   
+
    /** Constructor for Buffer.*/
    template<typename T> inline
    Buffer<T>::Buffer() {
@@ -91,16 +91,16 @@ namespace pargrid {
    template<typename T> inline
    uint32_t* Buffer<T>::getBlockSizes() {
       // If buffer is being copied its contents cannot be read or written:
-      if (copyOngoing == true) return NULL;
+      if (copyOngoing == true) { return NULL; }
       return &(this->blockSizes[0]);
    }
-   
+
    /** Get buffer where copied elements are stored. If buffer contents 
     * are currently being copied then a vector of size zero is returned.
     * @return Vector containing elements currently in buffer.*/
    template<typename T> inline
    std::vector<T>& Buffer<T>::getBuffer() {
-      if (copyOngoing == true) return dummyBuffer;
+      if (copyOngoing == true) { return dummyBuffer; }
       return buffer;
    }
 
@@ -108,30 +108,30 @@ namespace pargrid {
     * This function is used by CopyProtocol classes.
     * @return Pointer to array used by std::vector<T> buffer.*/
    template<typename T> inline
-   void* Buffer<T>::getBufferPointer() {return &(buffer[0]);}
+   void* Buffer<T>::getBufferPointer() { return &(buffer[0]); }
 
    /** Get number of elements in buffer. This function is used by CopyProtocol classes.
     * @return Size of std::vector<T> buffer.*/
    template<typename T> inline
-   size_t Buffer<T>::getBufferSize() const {return buffer.size();}
-   
+   size_t Buffer<T>::getBufferSize() const { return buffer.size(); }
+
    /** Get byte size of element stored in buffer. This function is used by CopyProtocol classes.
     * @return Byte size of element, as given by sizeof function.*/
    template<typename T> inline
-   size_t Buffer<T>::getElementByteSize() const {return sizeof(T);}
-   
+   size_t Buffer<T>::getElementByteSize() const { return sizeof(T); }
+
    /** Get number of message blocks. This is the size of array 
     * returned by Buffer::getBlockSizes().
     * @return Number of message blocks.*/
    template<typename T> inline
-   size_t Buffer<T>::getNumberOfBlocks() const {return blockSizes.size() - buffermetadata::SIZE;}
+   size_t Buffer<T>::getNumberOfBlocks() const { return blockSizes.size() - buffermetadata::SIZE; }
 
    /** Get number of elements that were actually copied by CopyProtocol class.
     * This is equal to or less than the size of vector returned by Buffer::getBuffer().
     * @return Number of elements copied.*/
    template<typename T> inline
-   size_t Buffer<T>::getNumberOfCopiedElements() const {return N_copiedElements;}
-   
+   size_t Buffer<T>::getNumberOfCopiedElements() const { return N_copiedElements; }
+
    /** Change the amount of message blocks used by Buffer. This function
     * fails if buffer contents are currently being copied.
     * @param N_blocks New amount of message blocks.
@@ -139,8 +139,8 @@ namespace pargrid {
    template<typename T> inline
    bool Buffer<T>::resize(uint32_t N_blocks) {
       // Buffer cannot be changed if its contents are being copied:
-      if (copyOngoing == true) return false;
-      
+      if (copyOngoing == true) { return false; }
+
       // Reallocate blockSizes array:
 	{
 	   std::vector<uint32_t> dummy;
@@ -158,7 +158,7 @@ namespace pargrid {
     * @return If true, buffer size was successfully changed.*/
    template<typename T> inline
    bool Buffer<T>::setBufferSize(size_t newSize) {
-      if (copyOngoing == true) return false;
+      if (copyOngoing == true) { return false; }
       buffer.resize(newSize);
       return true;
    }
@@ -171,7 +171,7 @@ namespace pargrid {
       this->copyOngoing = copyOngoing;
       this->N_copiedElements = N_copiedElements;
    }
-   
+
 } // namespace pargrid
 
 #endif

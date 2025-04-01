@@ -27,18 +27,18 @@
 namespace pargrid {
 
    typedef unsigned int ArraySizetype; /**< Datatype used for array sizes and capacities.*/
-   
+
    // ********************************************** //
    // ***** CLASS USERDATADYNAMIC DECLARATIONS ***** //
    // ********************************************** //
-   
+
    template<class PARGRID>
    class UserDataDynamic {
     public:
       UserDataDynamic();
       UserDataDynamic(const UserDataDynamic& udd);
       ~UserDataDynamic();
-      
+
       void finalize();
       char** getArrayPointer() const;
       ArraySizetype* getCapacityPointer() const;
@@ -52,7 +52,7 @@ namespace pargrid {
       void initialize(PARGRID* pargrid,const std::string& name,CellID N_cells,unsigned int elementByteSize,const std::string& datatype);
       void reallocate(CellID start,CellID end);
       void swap(UserDataDynamic& udd);
-      
+
     private:
       char** arrays;                 /**< Arrays containing data for each cell.*/
       MPI_Datatype basicDatatype;    /**< Derived MPI datatype that transfers a single element.*/
@@ -64,11 +64,11 @@ namespace pargrid {
       PARGRID* pargrid;              /**< Pointer to ParGrid.*/
       ArraySizetype* sizes;          /**< Current amount of elements in each cell.*/
    };
-   
+
    // ********************************************* //
    // ***** CLASS USERDATADYNAMIC DEFINITIONS ***** //
    // ********************************************* //
-   
+
    template<class PARGRID> inline
    UserDataDynamic<PARGRID>::UserDataDynamic() {
       arrays = NULL;
@@ -78,7 +78,7 @@ namespace pargrid {
       sizes = NULL;
       finalize();
    }
-   
+
    template<class PARGRID> inline
    UserDataDynamic<PARGRID>::UserDataDynamic(const UserDataDynamic& udd) {
       finalize();
@@ -87,14 +87,14 @@ namespace pargrid {
       N_cells         = udd.N_cells;
       pargrid         = udd.pargrid;
       datatype        = udd.datatype;
-      
+
       // Copy contents of array sizes:
       sizes = new ArraySizetype[N_cells];
       for (CellID cell=0; cell<N_cells; ++cell) sizes[cell] = udd.sizes[cell];
 
       capacities = new ArraySizetype[N_cells];
       for (CellID cell=0; cell<N_cells; ++cell) capacities[cell] = udd.capacities[cell];
-      
+
       // Allocate data arrays and copy contents:
       arrays = new char* [N_cells];
       for (CellID cell=0; cell<N_cells; ++cell) {
@@ -102,15 +102,15 @@ namespace pargrid {
 	      for (ArraySizetype i=0; i<elementByteSize*sizes[cell]; ++i)
 	      arrays[cell][i] = udd.arrays[cell][i];
       }
-      
+
       // Create a derived MPI datatype that transfers a single array element:
       MPI_Type_contiguous(elementByteSize,MPI_Type<char>(),&basicDatatype);
       MPI_Type_commit(&basicDatatype);
    }
-   
+
    template<class PARGRID> inline
    UserDataDynamic<PARGRID>::~UserDataDynamic() {finalize();}
-   
+
    template<class PARGRID> inline
    void UserDataDynamic<PARGRID>::finalize() {
       for (DataID cell=0; cell<N_cells; ++cell) {
@@ -126,19 +126,19 @@ namespace pargrid {
       name = "";
       N_cells = 0;
       pargrid = NULL;
-      
+
       if (basicDatatype != MPI_DATATYPE_NULL) MPI_Type_free(&basicDatatype);
    }
 
    template<class PARGRID> inline
-   char** UserDataDynamic<PARGRID>::getArrayPointer() const {return arrays;}
-   
-   template<class PARGRID> inline
-   ArraySizetype* UserDataDynamic<PARGRID>::getCapacityPointer() const {return capacities;}
+   char** UserDataDynamic<PARGRID>::getArrayPointer() const { return arrays; }
 
    template<class PARGRID> inline
-   const std::string& UserDataDynamic<PARGRID>::getDatatype() const {return datatype;}
-   
+   ArraySizetype* UserDataDynamic<PARGRID>::getCapacityPointer() const { return capacities; }
+
+   template<class PARGRID> inline
+   const std::string& UserDataDynamic<PARGRID>::getDatatype() const { return datatype; }
+
    /** Get a derived MPI datatype that sends or receives given cell data
     * with a single transfer. Note that array sizes must have been transferred, 
     * i.e. the amount of data sent or received, and reallocate function called, 
@@ -168,14 +168,14 @@ namespace pargrid {
    }
 
    template<class PARGRID> inline
-   ArraySizetype UserDataDynamic<PARGRID>::getElementByteSize() const {return elementByteSize;}
-   
+   ArraySizetype UserDataDynamic<PARGRID>::getElementByteSize() const { return elementByteSize; }
+
    template<class PARGRID> inline
-   const std::string& UserDataDynamic<PARGRID>::getName() const {return name;}
-   
+   const std::string& UserDataDynamic<PARGRID>::getName() const { return name; }
+
    template<class PARGRID> inline
-   CellID UserDataDynamic<PARGRID>::getNumberOfCells() const {return N_cells;}
-   
+   CellID UserDataDynamic<PARGRID>::getNumberOfCells() const { return N_cells; }
+
    template<class PARGRID> inline
    void UserDataDynamic<PARGRID>::getSizeDatatype(const std::set<CellID>& globalIDs,MPI_Datatype& datatype) {
       // Calculate displacements relative to start of array sizes:
@@ -186,7 +186,7 @@ namespace pargrid {
 	      displacements[counter] = localID;
 	      ++counter;
       }
-      
+
       // Create a derived datatype for transferring all array sizes
       // with a single send and commit the created datatype:
       MPI_Type_create_indexed_block(globalIDs.size(),1,displacements,MPI_Type<ArraySizetype>(),&datatype);
@@ -195,8 +195,8 @@ namespace pargrid {
    }
 
    template<class PARGRID> inline
-   ArraySizetype* UserDataDynamic<PARGRID>::getSizePointer() const {return sizes;}
-   
+   ArraySizetype* UserDataDynamic<PARGRID>::getSizePointer() const { return sizes; }
+
    template<class PARGRID> inline
    void UserDataDynamic<PARGRID>::initialize(PARGRID* pargrid,const std::string& name,CellID N_cells,
 					                              unsigned int elementByteSize,const std::string& datatype) {
@@ -205,16 +205,16 @@ namespace pargrid {
       this->N_cells         = N_cells;
       this->elementByteSize = elementByteSize;
       this->datatype        = datatype;
-      
+
       sizes = new ArraySizetype[N_cells];
       for (CellID i=0; i<N_cells; ++i) sizes[i]  = 0;
-      
+
       capacities = new ArraySizetype[N_cells];
       for (CellID i=0; i<N_cells; ++i) capacities[i] = sizes[i];
-      
+
       arrays = new char* [N_cells];
       for (CellID i=0; i<N_cells; ++i) arrays[i] = NULL;
-      
+
       MPI_Type_contiguous(elementByteSize,MPI_Type<char>(),&basicDatatype);
       MPI_Type_commit(&basicDatatype);
    }
@@ -269,7 +269,7 @@ namespace pargrid {
       MPI_Type_contiguous(udd.elementByteSize,MPI_Type<char>(),&udd.basicDatatype);
       MPI_Type_commit(&udd.basicDatatype);
    }
-   
+
 } // namespace pargrid
 
 #endif

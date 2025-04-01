@@ -41,14 +41,14 @@ namespace pargrid {
       const ArraySizetype* size() const;
       ArraySizetype size(CellID cell) const;
       bool valid() const;
-      
+
     private:
       T** arrays;                   /**< Pointers to arrays containing user data for each cell.*/
       ArraySizetype* capacities;    /**< Current capacity of each cell, counted in array elements having byte size elementByteSize.*/
       uint64_t elementByteSize;     /**< Byte size of an array element.*/
       CellID N_cells;               /**< Number of cells in arrays, capacities, and sizes.*/
       ArraySizetype* sizes;         /**< Current size of each cell, counted in array elements having byte size elementByteSiz.*/
-      
+
       /** Private default constructor to prevent the creation 
        * of DataWrappers that point to an invalid ParGrid dynamic data array.*/
       DataWrapper();
@@ -72,8 +72,8 @@ namespace pargrid {
    /** Get the array containing current capacities of cells.
     * @return Pointer to capacity array.*/
    template<typename T> inline
-   const ArraySizetype* DataWrapper<T>::capacity() const {return capacities;}
-   
+   const ArraySizetype* DataWrapper<T>::capacity() const { return capacities; }
+
    /** Get the current capacity of the given cell.
     * @param cell Local ID of the cell.
     * @return Current capacity of the cell.*/
@@ -87,13 +87,13 @@ namespace pargrid {
       #endif
       return capacities[cell];
    }
-   
+
    /** Get arrays containg user data. Number of elements in each cell 
     * can be obtained from the array returned by size() member function.
     * @return Pointers to arrays containing dynamic user data.*/
    template<typename T> inline
-   //T** DataWrapper<T>::data() const {return reinterpret_cast<T**>(arrays);}
-   T** DataWrapper<T>::data() const {return arrays;}
+   //T** DataWrapper<T>::data() const { return reinterpret_cast<T**>(arrays); }
+   T** DataWrapper<T>::data() const { return arrays; }
 
    /** Insert a new element to the given cell. This function increases the 
     * capacity of the cell by a factor of two if the current capacity is too 
@@ -106,7 +106,7 @@ namespace pargrid {
          if (cell >= N_cells) {
 	    std::cerr << "(PARGRID DATAWRAPPER) ERROR: Given cell ID #" << cell << " out of bounds in push_back!" << std::endl;
 	    exit(1);
-	 }         
+	 }
       #endif
 
       // If array does not have sufficient capacity for a new element,
@@ -115,18 +115,18 @@ namespace pargrid {
       if (sizes[cell]+1 > capacities[cell]) {
 	 capacities[cell] = 2*(sizes[cell]+1);
 	 T* tmp = new T[capacities[cell]];
-	 for (ArraySizetype i=0; i<sizes[cell]; ++i) tmp[i] = arrays[cell][i];
+	 for (ArraySizetype i=0; i<sizes[cell]; ++i) { tmp[i] = arrays[cell][i]; }
 	 delete [] arrays[cell];
 	 arrays[cell] = tmp;
       }
-      
+
       #ifndef NDEBUG
          if (arrays[cell] == NULL) {
 	    std::cerr << "(PARGRID) ERROR: DataWrapper array[" << cell << "] is NULL!" << std::endl;
 	    exit(1);
 	 }
       #endif
-      
+
       // Insert given element and increase array size:
       arrays[cell][sizes[cell]] = element;
       ++sizes[cell];
@@ -148,24 +148,25 @@ namespace pargrid {
 	    exit(1);
 	 }
       #endif
-      
+
       if (newCapacity < capacities[cell]) {
 	 // If requested capacity is smaller than the current one, 
 	 // create a new array with reduces capacity and copy 
 	 // some of the contents from the old array:
 	 capacities[cell] = newCapacity;
 	 T* tmp = new T[newCapacity];
-	 for (ArraySizetype i=0; i<newCapacity; ++i) tmp[i] = arrays[cell][i];
+	 for (ArraySizetype i=0; i<newCapacity; ++i) { tmp[i] = arrays[cell][i]; }
 	 delete [] arrays[cell];
 	 arrays[cell] = tmp;
 	 sizes[cell] = newCapacity;
-      } else {
+      }
+      else {
 	 // If requested capacity is larger than the current one,
 	 // just call reserve:
 	 reserve(cell,newCapacity);
       }
    }
-   
+
    /** Make a request that given cell is able to hold at least 
     * newCapacity number of elements. This function will increase 
     * the current capacity of the given cell if the requested capacity 
@@ -182,19 +183,19 @@ namespace pargrid {
 	    exit(1);
 	 }
       #endif
-      
+
       // If requested capacity is larger than the current capacity,
       // create a new array with requested capacity and copy
       // contents from the old one:
       if (newCapacity > capacities[cell]) {
 	 capacities[cell] = newCapacity;
 	 T* tmp = new T[newCapacity];
-	 for (ArraySizetype i=0; i<sizes[cell]; ++i) tmp[i] = arrays[cell][i];
+	 for (ArraySizetype i=0; i<sizes[cell]; ++i) { tmp[i] = arrays[cell][i]; }
 	 delete [] arrays[cell];
 	 arrays[cell] = tmp;
       }
    }
-   
+
    /** Resize, i.e. insert or remove elements to/from, the given cell. If 
     * newSize is larger than the current capacity, a new array with capacity equal 
     * to newSize is allocated. Note that this function will not call 
@@ -209,29 +210,30 @@ namespace pargrid {
 	    exit(1);
 	 }
       #endif
-      
+
       if (newSize <= capacities[cell]) {
 	 // Just reduce array size:
 	 sizes[cell] = newSize;
-      } else {
+      }
+      else {
 	 // Old capacity is too small, increase it and 
 	 // copy contents from old array into a new one:
 	 capacities[cell] = newSize;
 	 char* ptr = reinterpret_cast<char*>(arrays[cell]);
 	 char* tmp = new char[newSize*elementByteSize];
-	 for (uint64_t i=0; i<sizes[cell]*elementByteSize; ++i) tmp[i] = ptr[i];
+	 for (uint64_t i=0; i<sizes[cell]*elementByteSize; ++i) { tmp[i] = ptr[i]; }
 	 delete [] arrays[cell];
 	 arrays[cell] = reinterpret_cast<T*>(tmp);
-	 
+
 	 // Resize array:
 	 sizes[cell] = newSize;
       }
    }
-   
+
    /** Get array containing the current size of each cell.
     * @return Pointer to array containing the size of each cell.*/
    template<typename T> inline
-   const ArraySizetype* DataWrapper<T>::size() const {return sizes;}
+   const ArraySizetype* DataWrapper<T>::size() const { return sizes; }
 
    /** Get current size of given cell.
     * @param cell Local ID of the cell.
@@ -246,7 +248,7 @@ namespace pargrid {
       #endif
       return sizes[cell];
    }
-   
+
    /** If true, this DataWrapper points to a valid dynamic ParGrid data array.
     * DataWrappers become invalid, e.g. after repartitioning.
     * @return If true, this DataWrapper points to a valid dynamic
@@ -256,7 +258,6 @@ namespace pargrid {
       if (arrays == NULL) return false;
       return true;
    }
-   
 } // namespace pargrid
 
 #endif
