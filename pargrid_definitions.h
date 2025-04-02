@@ -76,5 +76,5 @@ namespace pargrid {
    T getInvalidID() { return std::numeric_limits<T>::max(); }
 
 } // namespace pargrid
- 
+
 #endif

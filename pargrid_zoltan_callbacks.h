@@ -28,31 +28,31 @@ namespace pargrid {
    template<class PARGRID>
    void cb_getAllCellCoordinates(void* pargrid,int N_globalEntries,int N_localEntries,int N_cellIDs,ZOLTAN_ID_PTR globalID,
 				 ZOLTAN_ID_PTR localID,int N_coords,double* geometryData,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getCellCoordinates(void* pargrid,int N_globalEntries,int N_localEntries,ZOLTAN_ID_PTR globalID,
 			      ZOLTAN_ID_PTR localID,double* geometryData,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getAllCellEdges(void* pargrid,int N_globalIDs,int N_localIDs,int N_cells,ZOLTAN_ID_PTR globalIDs,
 			   ZOLTAN_ID_PTR localIDs,int* N_edges,ZOLTAN_ID_PTR nbrGlobalIDs,int* nbrHosts,
 			   int N_weights,CellWeight* edgeWeights,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getCellEdges(void* pargrid,int N_globalIDs,int N_localIDs,ZOLTAN_ID_PTR globalID,
 			ZOLTAN_ID_PTR localID,ZOLTAN_ID_PTR nbrGlobalIDs,int* nbrHosts,
 			int N_weights,CellWeight* weight,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getHierarchicalParameters(void* pargrid,int level,Zoltan_Struct* zs,int* rcode);
-   
+
    template<class PARGRID>
    int cb_getHierarchicalPartNumber(void* pargrid,int level,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getHyperedges(void* pargrid,int N_globalIDs,int N_vtxedges,int N_pins,int format,
 			 ZOLTAN_ID_PTR vtxedge_GID,int* vtxedge_ptr,ZOLTAN_ID_PTR pin_GID,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getHyperedgeWeights(void* pargrid,int N_globalIDs,int N_localIDs,int N_edges,int N_weights,
 			       ZOLTAN_ID_PTR edgeGlobalID,ZOLTAN_ID_PTR edgeLocalID,CellWeight* edgeWeights,int* rcode);
@@ -63,7 +63,7 @@ namespace pargrid {
    template<class PARGRID>
    void cb_getLocalCellList(void* pargrid,int N_globalIDs,int N_localIDs,ZOLTAN_ID_PTR globalIDs,
 			    ZOLTAN_ID_PTR localIDs,int N_weights,CellWeight* cellWeights,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getNumberOfAllEdges(void* pargrid,int N_globalIDs,int N_localIDs,int N_cells,ZOLTAN_ID_PTR globalIDs,
 			       ZOLTAN_ID_PTR localIDs,int* N_edges,int* rcode);
@@ -71,30 +71,30 @@ namespace pargrid {
    template<class PARGRID>
    int cb_getNumberOfEdges(void* pargrid,int N_globalIDs,int N_localIDs,ZOLTAN_ID_PTR globalID,
 			   ZOLTAN_ID_PTR localID,int* rcode);
-   
+
    template<class PARGRID>
    int cb_getNumberOfHierarchicalLevels(void* pargrid,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getNumberOfHyperedges(void* pargrid,int* N_lists,int* N_pins,int* format,int* rcode);
-   
+
    template<class PARGRID>
    void cb_getNumberOfHyperedgeWeights(void* pargrid,int* N_edges,int* rcode);
-   
+
    template<class PARGRID>
    int cb_getNumberOfLocalCells(void* pargrid,int* rcode);
-   
+
    // ************************************************ //
    // ***** ZOLTAN CALLBACK FUNCTION DEFINITIONS ***** //
    // ************************************************ //
-   
+
    template<class PARGRID> inline
    void cb_getAllCellCoordinates(void* pargrid,int N_globalEntries,int N_localEntries,int N_cellIDs,ZOLTAN_ID_PTR globalID,
 				 ZOLTAN_ID_PTR localID,int N_coords,double* geometryData,int* rcode) {
       PARGRID* ptr = reinterpret_cast<PARGRID*>(pargrid);
       ptr->getAllCellCoordinates(N_globalEntries,N_localEntries,N_cellIDs,globalID,localID,N_coords,geometryData,rcode);
    }
-   
+
    template<class PARGRID> inline
    void cb_getCellCoordinates(void* pargrid,int N_globalEntries,int N_localEntries,ZOLTAN_ID_PTR globalID,
 			      ZOLTAN_ID_PTR localID,CellCoordinate* geometryData,int* rcode) {
@@ -194,7 +194,7 @@ namespace pargrid {
       PARGRID* ptr = reinterpret_cast<PARGRID*>(pargrid);
       return ptr->getNumberOfLocalCells(rcode);
    }
-   
+
 } // namespace pargrid
 
 #endif

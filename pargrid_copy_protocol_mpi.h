@@ -272,7 +272,7 @@ namespace pargrid {
 	       std::cerr << "Killing execution in ParGrid::CopyProtocolMPI with name '" << name << "'" << std::endl;
 	       exit(1);
 	    }
-	 } while(true);
+	 } while (true);
       #else
          MPI_Waitall(3,requests,MPI_STATUSES_IGNORE);
       #endif
